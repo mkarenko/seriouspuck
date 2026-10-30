@@ -1,0 +1,166 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="900" viewBox="0 0 1120 900" font-family="DejaVu Sans, Arial, sans-serif">
+<rect width="1120" height="900" fill="#fff"/>
+<text x="560.0" y="32" font-size="20" text-anchor="middle" fill="#111" font-weight="bold">SeriousPuck</text>
+<text x="560.0" y="52" font-size="12" text-anchor="middle" fill="#555" font-weight="normal">Two XIAO boards stacked: nRF52840 (top) on RP2040 (bottom). Power comes only from the RP2040.</text>
+<rect x="420" y="80" width="178" height="210" rx="8" fill="#f3f6fa" stroke="#0a7" stroke-width="3"/>
+<rect x="483.0" y="74" width="52" height="30" rx="4" fill="#cfd6df" stroke="#667" stroke-width="1.5"/>
+<text x="509.0" y="95" font-size="10" text-anchor="middle" fill="#334" font-weight="normal">USB-C</text>
+<text x="509.0" y="312" font-size="14" text-anchor="middle" fill="#0a7" font-weight="bold">XIAO nRF52840</text>
+<text x="509.0" y="328" font-size="11" text-anchor="middle" fill="#555" font-weight="normal">OpenPuck receiver</text>
+<rect x="420" y="131" width="14" height="10" fill="#b9bec6" stroke="#555" stroke-width="1"/>
+<text x="438" y="140" font-size="10" text-anchor="start" fill="#888" font-weight="normal">D0 P0.02</text>
+<rect x="584" y="131" width="14" height="10" fill="#e0b84c" stroke="#555" stroke-width="1"/>
+<text x="580" y="140" font-size="10" text-anchor="end" fill="#000" font-weight="bold">5V</text>
+<rect x="420" y="155" width="14" height="10" fill="#b9bec6" stroke="#555" stroke-width="1"/>
+<text x="438" y="164" font-size="10" text-anchor="start" fill="#888" font-weight="normal">D1 P0.03</text>
+<rect x="584" y="155" width="14" height="10" fill="#e0b84c" stroke="#555" stroke-width="1"/>
+<text x="580" y="164" font-size="10" text-anchor="end" fill="#000" font-weight="bold">GND</text>
+<rect x="420" y="179" width="14" height="10" fill="#b9bec6" stroke="#555" stroke-width="1"/>
+<text x="438" y="188" font-size="10" text-anchor="start" fill="#888" font-weight="normal">D2 P0.28</text>
+<rect x="584" y="179" width="14" height="10" fill="#b9bec6" stroke="#555" stroke-width="1"/>
+<text x="580" y="188" font-size="10" text-anchor="end" fill="#888" font-weight="normal">3V3</text>
+<rect x="420" y="203" width="14" height="10" fill="#b9bec6" stroke="#555" stroke-width="1"/>
+<text x="438" y="212" font-size="10" text-anchor="start" fill="#888" font-weight="normal">D3 P0.29</text>
+<rect x="584" y="203" width="14" height="10" fill="#b9bec6" stroke="#555" stroke-width="1"/>
+<text x="580" y="212" font-size="10" text-anchor="end" fill="#888" font-weight="normal">D10 P1.15</text>
+<rect x="420" y="227" width="14" height="10" fill="#b9bec6" stroke="#555" stroke-width="1"/>
+<text x="438" y="236" font-size="10" text-anchor="start" fill="#888" font-weight="normal">D4 P0.04</text>
+<rect x="584" y="227" width="14" height="10" fill="#b9bec6" stroke="#555" stroke-width="1"/>
+<text x="580" y="236" font-size="10" text-anchor="end" fill="#888" font-weight="normal">D9 P1.14</text>
+<rect x="420" y="251" width="14" height="10" fill="#b9bec6" stroke="#555" stroke-width="1"/>
+<text x="438" y="260" font-size="10" text-anchor="start" fill="#888" font-weight="normal">D5 P0.05</text>
+<rect x="584" y="251" width="14" height="10" fill="#b9bec6" stroke="#555" stroke-width="1"/>
+<text x="580" y="260" font-size="10" text-anchor="end" fill="#888" font-weight="normal">D8 P1.13</text>
+<rect x="420" y="275" width="14" height="10" fill="#e0b84c" stroke="#555" stroke-width="1"/>
+<text x="438" y="284" font-size="10" text-anchor="start" fill="#000" font-weight="bold">D6 RX</text>
+<rect x="584" y="275" width="14" height="10" fill="#e0b84c" stroke="#555" stroke-width="1"/>
+<text x="580" y="284" font-size="10" text-anchor="end" fill="#000" font-weight="bold">D7 TX</text>
+<rect x="420" y="380" width="178" height="210" rx="8" fill="#f3f6fa" stroke="#c0392b" stroke-width="3"/>
+<rect x="483.0" y="374" width="52" height="30" rx="4" fill="#cfd6df" stroke="#667" stroke-width="1.5"/>
+<text x="509.0" y="395" font-size="10" text-anchor="middle" fill="#334" font-weight="normal">USB-C</text>
+<text x="509.0" y="612" font-size="14" text-anchor="middle" fill="#c0392b" font-weight="bold">XIAO RP2040</text>
+<text x="509.0" y="628" font-size="11" text-anchor="middle" fill="#555" font-weight="normal">GP2040-CE</text>
+<rect x="420" y="431" width="14" height="10" fill="#e0b84c" stroke="#555" stroke-width="1"/>
+<text x="438" y="440" font-size="10" text-anchor="start" fill="#000" font-weight="bold">D0 D+ GP26</text>
+<rect x="584" y="431" width="14" height="10" fill="#e0b84c" stroke="#555" stroke-width="1"/>
+<text x="580" y="440" font-size="10" text-anchor="end" fill="#000" font-weight="bold">5V</text>
+<rect x="420" y="455" width="14" height="10" fill="#e0b84c" stroke="#555" stroke-width="1"/>
+<text x="438" y="464" font-size="10" text-anchor="start" fill="#000" font-weight="bold">D1 D- GP27</text>
+<rect x="584" y="455" width="14" height="10" fill="#e0b84c" stroke="#555" stroke-width="1"/>
+<text x="580" y="464" font-size="10" text-anchor="end" fill="#000" font-weight="bold">GND</text>
+<rect x="420" y="479" width="14" height="10" fill="#e0b84c" stroke="#555" stroke-width="1"/>
+<text x="438" y="488" font-size="10" text-anchor="start" fill="#000" font-weight="bold">D2 GP28</text>
+<rect x="584" y="479" width="14" height="10" fill="#b9bec6" stroke="#555" stroke-width="1"/>
+<text x="580" y="488" font-size="10" text-anchor="end" fill="#888" font-weight="normal">3V3</text>
+<rect x="420" y="503" width="14" height="10" fill="#b9bec6" stroke="#555" stroke-width="1"/>
+<text x="438" y="512" font-size="10" text-anchor="start" fill="#888" font-weight="normal">D3 GP29</text>
+<rect x="584" y="503" width="14" height="10" fill="#b9bec6" stroke="#555" stroke-width="1"/>
+<text x="580" y="512" font-size="10" text-anchor="end" fill="#888" font-weight="normal">D10 GP3</text>
+<rect x="420" y="527" width="14" height="10" fill="#b9bec6" stroke="#555" stroke-width="1"/>
+<text x="438" y="536" font-size="10" text-anchor="start" fill="#888" font-weight="normal">D4 GP6</text>
+<rect x="584" y="527" width="14" height="10" fill="#b9bec6" stroke="#555" stroke-width="1"/>
+<text x="580" y="536" font-size="10" text-anchor="end" fill="#888" font-weight="normal">D9 GP4</text>
+<rect x="420" y="551" width="14" height="10" fill="#b9bec6" stroke="#555" stroke-width="1"/>
+<text x="438" y="560" font-size="10" text-anchor="start" fill="#888" font-weight="normal">D5 GP7</text>
+<rect x="584" y="551" width="14" height="10" fill="#b9bec6" stroke="#555" stroke-width="1"/>
+<text x="580" y="560" font-size="10" text-anchor="end" fill="#888" font-weight="normal">D8 GP2</text>
+<rect x="420" y="575" width="14" height="10" fill="#e0b84c" stroke="#555" stroke-width="1"/>
+<text x="438" y="584" font-size="10" text-anchor="start" fill="#000" font-weight="bold">D6 TX</text>
+<rect x="584" y="575" width="14" height="10" fill="#e0b84c" stroke="#555" stroke-width="1"/>
+<text x="580" y="584" font-size="10" text-anchor="end" fill="#000" font-weight="bold">D7 RX</text>
+<polyline points="427,280 250,280 250,580 427,580" fill="none" stroke="#1f77b4" stroke-width="3" stroke-linejoin="round"/>
+<circle cx="427" cy="280" r="4.5" fill="#1f77b4"/>
+<circle cx="427" cy="580" r="4.5" fill="#1f77b4"/>
+<text x="242" y="330" font-size="11" text-anchor="end" fill="#1f77b4" font-weight="bold">UART  RP TX -&gt; nRF RX</text>
+<polyline points="591,136 700,136 700,436 591,436" fill="none" stroke="#d62728" stroke-width="3" stroke-linejoin="round"/>
+<circle cx="591" cy="136" r="4.5" fill="#d62728"/>
+<circle cx="591" cy="436" r="4.5" fill="#d62728"/>
+<polyline points="591,160 670,160 670,460 591,460" fill="none" stroke="#333" stroke-width="3" stroke-linejoin="round"/>
+<circle cx="591" cy="160" r="4.5" fill="#333"/>
+<circle cx="591" cy="460" r="4.5" fill="#333"/>
+<polyline points="591,280 640,280 640,580 591,580" fill="none" stroke="#1f77b4" stroke-width="3" stroke-linejoin="round"/>
+<circle cx="591" cy="280" r="4.5" fill="#1f77b4"/>
+<circle cx="591" cy="580" r="4.5" fill="#1f77b4"/>
+<text transform="translate(628 516) rotate(-90)" font-size="11" text-anchor="middle" fill="#1f77b4" font-weight="bold">nRF TX -&gt; RP RX</text>
+<text x="706" y="140" font-size="11" text-anchor="start" fill="#d62728" font-weight="bold">5V</text>
+<text x="676" y="164" font-size="11" text-anchor="start" fill="#000" font-weight="bold">GND</text>
+<polyline points="670,460 670,470" fill="none" stroke="#333" stroke-width="2.5" stroke-linejoin="round"/>
+<polyline points="658,470 682,470" fill="none" stroke="#333" stroke-width="2.5" stroke-linejoin="round"/>
+<polyline points="662,475 678,475" fill="none" stroke="#333" stroke-width="2.5" stroke-linejoin="round"/>
+<polyline points="666,480 674,480" fill="none" stroke="#333" stroke-width="2.5" stroke-linejoin="round"/>
+<rect x="40" y="86" width="180" height="70" rx="12" fill="#eef" stroke="#446" stroke-width="2"/>
+<text x="130" y="116" font-size="14" text-anchor="middle" fill="#223" font-weight="bold">Steam Controller</text>
+<text x="130" y="136" font-size="11" text-anchor="middle" fill="#555" font-weight="normal">(wireless, SC2)</text>
+<path d="M 242.8 107 A 14 14 0 0 1 242.8 135" fill="none" stroke="#e67e22" stroke-width="2.5"/>
+<path d="M 245.2 95 A 26 26 0 0 1 245.2 147" fill="none" stroke="#e67e22" stroke-width="2.5"/>
+<path d="M 247.6 83 A 38 38 0 0 1 247.6 159" fill="none" stroke="#e67e22" stroke-width="2.5"/>
+<text x="325" y="74" font-size="11" text-anchor="middle" fill="#e67e22" font-weight="bold">2.4 GHz proprietary radio</text>
+<rect x="790" y="285" width="260" height="62" rx="10" fill="#e9f5e9" stroke="#2a6" stroke-width="2"/>
+<text x="920" y="311" font-size="14" text-anchor="middle" fill="#143" font-weight="bold">Xbox Series X|S</text>
+<text x="920" y="331" font-size="11" text-anchor="middle" fill="#555" font-weight="normal">console USB port (Xbox/GIP output)</text>
+<polyline points="509.0,374 509.0,345 790,345" fill="none" stroke="#2ca02c" stroke-width="4" stroke-linejoin="round"/>
+<text x="920" y="372" font-size="11" text-anchor="middle" fill="#2ca02c" font-weight="bold">USB cable to console</text>
+<text x="920" y="386" font-size="11" text-anchor="middle" fill="#555" font-weight="normal">(also powers everything)</text>
+<rect x="790" y="600" width="110" height="130" rx="6" fill="#dfe6ef" stroke="#556" stroke-width="2"/>
+<text x="845" y="620" font-size="13" text-anchor="middle" fill="#223" font-weight="bold">USB-A</text>
+<text x="845" y="636" font-size="11" text-anchor="middle" fill="#223" font-weight="normal">female</text>
+<text x="845" y="650" font-size="11" text-anchor="middle" fill="#223" font-weight="normal">breakout</text>
+<rect x="783" y="670" width="14" height="10" fill="#e0b84c" stroke="#555"/>
+<text x="802" y="679" font-size="11" text-anchor="start" fill="#000" font-weight="bold">VCC</text>
+<rect x="783" y="690" width="14" height="10" fill="#e0b84c" stroke="#555"/>
+<text x="802" y="699" font-size="11" text-anchor="start" fill="#000" font-weight="bold">D-</text>
+<rect x="783" y="710" width="14" height="10" fill="#e0b84c" stroke="#555"/>
+<text x="802" y="719" font-size="11" text-anchor="start" fill="#000" font-weight="bold">D+</text>
+<rect x="783" y="730" width="14" height="10" fill="#e0b84c" stroke="#555"/>
+<text x="802" y="739" font-size="11" text-anchor="start" fill="#000" font-weight="bold">GND</text>
+<polyline points="770,735 770,745" fill="none" stroke="#333" stroke-width="2.5" stroke-linejoin="round"/>
+<polyline points="758,745 782,745" fill="none" stroke="#333" stroke-width="2.5" stroke-linejoin="round"/>
+<polyline points="762,750 778,750" fill="none" stroke="#333" stroke-width="2.5" stroke-linejoin="round"/>
+<polyline points="766,755 774,755" fill="none" stroke="#333" stroke-width="2.5" stroke-linejoin="round"/>
+<polyline points="770,735 783,735" fill="none" stroke="#333" stroke-width="2.5" stroke-linejoin="round"/>
+<rect x="960" y="625" width="130" height="80" rx="10" fill="#fdecea" stroke="#b33" stroke-width="2"/>
+<text x="1025" y="652" font-size="13" text-anchor="middle" fill="#511" font-weight="bold">Original Xbox</text>
+<text x="1025" y="669" font-size="13" text-anchor="middle" fill="#511" font-weight="bold">controller</text>
+<text x="1025" y="689" font-size="11" text-anchor="middle" fill="#555" font-weight="normal">(auth relay)</text>
+<polyline points="900,690 960,690" fill="none" stroke="#555" stroke-width="4" stroke-linejoin="round"/>
+<polyline points="700,436 700,675 783,675" fill="none" stroke="#d62728" stroke-width="3" stroke-linejoin="round"/>
+<circle cx="700" cy="436" r="4.5" fill="#d62728"/>
+<polyline points="427,460 320,460 320,695 783,695" fill="none" stroke="#8e44ad" stroke-width="3" stroke-linejoin="round"/>
+<circle cx="427" cy="460" r="4.5" fill="#8e44ad"/>
+<polyline points="427,436 300,436 300,715 783,715" fill="none" stroke="#2ca02c" stroke-width="3" stroke-linejoin="round"/>
+<circle cx="427" cy="436" r="4.5" fill="#2ca02c"/>
+<polyline points="520,695 520,713" fill="none" stroke="#8e44ad" stroke-width="2.5" stroke-linejoin="round"/>
+<circle cx="520" cy="695" r="4.5" fill="#8e44ad"/>
+<rect x="514" y="713" width="12" height="30" fill="#fff" stroke="#8e44ad" stroke-width="2"/>
+<polyline points="520,743 520,751" fill="none" stroke="#8e44ad" stroke-width="2.5" stroke-linejoin="round"/>
+<polyline points="520,751 520,761" fill="none" stroke="#333" stroke-width="2.5" stroke-linejoin="round"/>
+<polyline points="508,761 532,761" fill="none" stroke="#333" stroke-width="2.5" stroke-linejoin="round"/>
+<polyline points="512,766 528,766" fill="none" stroke="#333" stroke-width="2.5" stroke-linejoin="round"/>
+<polyline points="516,771 524,771" fill="none" stroke="#333" stroke-width="2.5" stroke-linejoin="round"/>
+<polyline points="570,715 570,733" fill="none" stroke="#2ca02c" stroke-width="2.5" stroke-linejoin="round"/>
+<circle cx="570" cy="715" r="4.5" fill="#2ca02c"/>
+<rect x="564" y="733" width="12" height="30" fill="#fff" stroke="#2ca02c" stroke-width="2"/>
+<polyline points="570,763 570,771" fill="none" stroke="#2ca02c" stroke-width="2.5" stroke-linejoin="round"/>
+<polyline points="570,771 570,781" fill="none" stroke="#333" stroke-width="2.5" stroke-linejoin="round"/>
+<polyline points="558,781 582,781" fill="none" stroke="#333" stroke-width="2.5" stroke-linejoin="round"/>
+<polyline points="562,786 578,786" fill="none" stroke="#333" stroke-width="2.5" stroke-linejoin="round"/>
+<polyline points="566,791 574,791" fill="none" stroke="#333" stroke-width="2.5" stroke-linejoin="round"/>
+<text x="680" y="805" font-size="11" text-anchor="middle" fill="#555" font-weight="normal">15 k pull-downs on D+ / D-</text>
+<text x="680" y="819" font-size="11" text-anchor="middle" fill="#555" font-weight="normal">(add if the pad is not detected)</text>
+<text x="60" y="640" font-size="13" text-anchor="start" fill="#222" font-weight="bold">Legend</text>
+<polyline points="60,660 96,660" fill="none" stroke="#d62728" stroke-width="4" stroke-linejoin="round"/>
+<text x="106" y="664" font-size="11" text-anchor="start" fill="#222" font-weight="normal">5V (from console via RP2040)</text>
+<polyline points="60,680 96,680" fill="none" stroke="#333" stroke-width="4" stroke-linejoin="round"/>
+<text x="106" y="684" font-size="11" text-anchor="start" fill="#222" font-weight="normal">GND (common)</text>
+<polyline points="60,700 96,700" fill="none" stroke="#1f77b4" stroke-width="4" stroke-linejoin="round"/>
+<text x="106" y="704" font-size="11" text-anchor="start" fill="#222" font-weight="normal">UART 1 Mbaud 3.3 V</text>
+<polyline points="60,720 96,720" fill="none" stroke="#2ca02c" stroke-width="4" stroke-linejoin="round"/>
+<text x="106" y="724" font-size="11" text-anchor="start" fill="#222" font-weight="normal">USB D+</text>
+<polyline points="60,740 96,740" fill="none" stroke="#8e44ad" stroke-width="4" stroke-linejoin="round"/>
+<text x="106" y="744" font-size="11" text-anchor="start" fill="#222" font-weight="normal">USB D-</text>
+<polyline points="60,760 96,760" fill="none" stroke="#e67e22" stroke-width="4" stroke-linejoin="round"/>
+<text x="106" y="764" font-size="11" text-anchor="start" fill="#222" font-weight="normal">radio</text>
+<text x="60" y="838" font-size="11" text-anchor="start" fill="#d62728" font-weight="bold">nRF USB-C stays UNPLUGGED (RP USB-C feeds both boards).</text>
+<text x="60" y="790" font-size="11" text-anchor="start" fill="#555" font-weight="normal">Crossing lines without a dot are NOT connected.</text>
+<text x="60" y="806" font-size="11" text-anchor="start" fill="#555" font-weight="normal">Pad order matches the official Seeed XIAO pinouts (USB-C on top).</text>
+</svg>
