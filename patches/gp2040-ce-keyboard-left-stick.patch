@@ -1,0 +1,474 @@
+diff --git a/headers/addons/keyboard_host.h b/headers/addons/keyboard_host.h
+index 11f38757..280e8d0a 100644
+--- a/headers/addons/keyboard_host.h
++++ b/headers/addons/keyboard_host.h
+@@ -15,10 +15,27 @@
+ #define KEYBOARD_HOST_PIN_5V -1
+ #endif
+ 
++#ifndef KEY_LEFT_STICK_UP
++#define KEY_LEFT_STICK_UP HID_KEY_W
++#endif
++#ifndef KEY_LEFT_STICK_DOWN
++#define KEY_LEFT_STICK_DOWN HID_KEY_S
++#endif
++#ifndef KEY_LEFT_STICK_LEFT
++#define KEY_LEFT_STICK_LEFT HID_KEY_A
++#endif
++#ifndef KEY_LEFT_STICK_RIGHT
++#define KEY_LEFT_STICK_RIGHT HID_KEY_D
++#endif
++
+ #ifndef KEYBOARD_HOST_MOUSE_SENSITIVITY
+ #define KEYBOARD_HOST_MOUSE_SENSITIVITY 50
+ #endif
+ 
++#ifndef KEYBOARD_HOST_MOUSE_DEADZONE
++#define KEYBOARD_HOST_MOUSE_DEADZONE 20
++#endif
++
+ #ifndef KEYBOARD_HOST_MOUSE_MOVEMENT
+ #define KEYBOARD_HOST_MOUSE_MOVEMENT 0
+ #endif
+diff --git a/headers/addons/keyboard_host_listener.h b/headers/addons/keyboard_host_listener.h
+index c1c8f3b2..4f24f1d5 100644
+--- a/headers/addons/keyboard_host_listener.h
++++ b/headers/addons/keyboard_host_listener.h
+@@ -60,6 +60,13 @@ private:
+     KeyboardButtonMapping _keyboard_host_mapButtonA2;
+     KeyboardButtonMapping _keyboard_host_mapButtonA3;
+     KeyboardButtonMapping _keyboard_host_mapButtonA4;
++    KeyboardButtonMapping _keyboard_host_mapLeftStickUp;
++    KeyboardButtonMapping _keyboard_host_mapLeftStickDown;
++    KeyboardButtonMapping _keyboard_host_mapLeftStickLeft;
++    KeyboardButtonMapping _keyboard_host_mapLeftStickRight;
++    bool _keyboard_host_leftStickActive = false;
++    uint16_t _keyboard_host_leftStickX = 0;
++    uint16_t _keyboard_host_leftStickY = 0;
+     GamepadState _keyboard_host_state;
+     bool _keyboard_host_mounted;
+     uint8_t _keyboard_dev_addr;
+@@ -75,6 +82,14 @@ private:
+     uint8_t mouseMovementMode;
+     float mouseSensitivityScale;
+     uint32_t mouseResetMS;
++    // velocity based mouse -> stick conversion
++    uint32_t mouseDeadzone;        // percent of stick travel added to cross the game's dead zone
++    float mouseAccX = 0.0f;        // mouse counts accumulated since the last update
++    float mouseAccY = 0.0f;
++    float mouseVelX = 0.0f;        // smoothed velocity in counts per millisecond
++    float mouseVelY = 0.0f;
++    uint32_t mouseLastUpdate = 0;
++    void updateMouseStick();
+     uint32_t lastMouseReport;
+     int16_t joystickMid;
+     int16_t mouseX;
+diff --git a/proto/config.proto b/proto/config.proto
+index d2843369..3a9b28ef 100644
+--- a/proto/config.proto
++++ b/proto/config.proto
+@@ -103,6 +103,10 @@ message KeyboardMapping
+     optional uint32 keyButtonE10 = 30;
+     optional uint32 keyButtonE11 = 31;
+     optional uint32 keyButtonE12 = 32;
++    optional uint32 keyLeftStickUp = 33;
++    optional uint32 keyLeftStickDown = 34;
++    optional uint32 keyLeftStickLeft = 35;
++    optional uint32 keyLeftStickRight = 36;
+ 
+ }
+ 
+@@ -812,6 +816,7 @@ message KeyboardHostOptions
+     optional uint32 mouseRight = 7;
+     optional uint32 mouseSensitivity = 8;
+     optional MouseMovementMode movementMode = 9;
++    optional uint32 mouseDeadzone = 10;
+ }
+ 
+ message GamepadUSBHostOptions
+diff --git a/src/addons/keyboard_host_listener.cpp b/src/addons/keyboard_host_listener.cpp
+index b16b8b60..5e795368 100644
+--- a/src/addons/keyboard_host_listener.cpp
++++ b/src/addons/keyboard_host_listener.cpp
+@@ -3,6 +3,7 @@
+ #include "storagemanager.h"
+ #include "class/hid/hid_host.h"
+ #include <algorithm>
++#include <cmath>
+ 
+ #define DEV_ADDR_NONE 0xFF
+ #define MOUSE_SCALE_FACTOR (GAMEPAD_JOYSTICK_MID / 127)
+@@ -53,6 +54,14 @@ void KeyboardHostListener::setup() {
+   _keyboard_host_mapButtonA2.setKey(keyboardMapping.keyButtonA2);
+   _keyboard_host_mapButtonA3.setKey(keyboardMapping.keyButtonA3);
+   _keyboard_host_mapButtonA4.setKey(keyboardMapping.keyButtonA4);
++  _keyboard_host_mapLeftStickUp.setMask(GAMEPAD_MASK_UP);
++  _keyboard_host_mapLeftStickDown.setMask(GAMEPAD_MASK_DOWN);
++  _keyboard_host_mapLeftStickLeft.setMask(GAMEPAD_MASK_LEFT);
++  _keyboard_host_mapLeftStickRight.setMask(GAMEPAD_MASK_RIGHT);
++  _keyboard_host_mapLeftStickUp.setKey(keyboardMapping.keyLeftStickUp);
++  _keyboard_host_mapLeftStickDown.setKey(keyboardMapping.keyLeftStickDown);
++  _keyboard_host_mapLeftStickLeft.setKey(keyboardMapping.keyLeftStickLeft);
++  _keyboard_host_mapLeftStickRight.setKey(keyboardMapping.keyLeftStickRight);
+ 
+   mouseLeftMapping = keyboardHostOptions.mouseLeft;
+   mouseMiddleMapping = keyboardHostOptions.mouseMiddle;
+@@ -60,12 +69,19 @@ void KeyboardHostListener::setup() {
+   mouseSensitivity = keyboardHostOptions.mouseSensitivity;
+   mouseMovementMode = keyboardHostOptions.movementMode;
+   mouseSensitivityScale = mouseSensitivity / 10.0f;
++  mouseDeadzone = std::min<uint32_t>(keyboardHostOptions.mouseDeadzone, 60);
++  mouseLastUpdate = getMillis();
+   mouseResetMS = 16;
+   lastMouseReport = getMillis() - mouseResetMS;
+ 
+   joystickMid = DriverManager::getInstance().getDriver() != nullptr ?
+       DriverManager::getInstance().getDriver()->GetJoystickMidValue() : GAMEPAD_JOYSTICK_MID;
+ 
++  _keyboard_host_state.lx = joystickMid;
++  _keyboard_host_state.ly = joystickMid;
++  _keyboard_host_state.rx = joystickMid;
++  _keyboard_host_state.ry = joystickMid;
++
+   _keyboard_host_mounted = false;
+   _keyboard_dev_addr = DEV_ADDR_NONE;
+   _keyboard_instance = 0;
+@@ -80,8 +96,62 @@ void KeyboardHostListener::setup() {
+   mouseActive = false;
+ }
+ 
++// Converts accumulated mouse movement into a stick deflection.
++// A stick reports velocity while a mouse reports distance, so the movement is turned into a smoothed
++// velocity (counts per millisecond), shaped with a response curve and lifted over the game's dead zone.
++void KeyboardHostListener::updateMouseStick() {
++  if (!_mouse_host_mounted || (mouseMovementMode != MOUSE_MOVEMENT_LEFT_ANALOG && mouseMovementMode != MOUSE_MOVEMENT_RIGHT_ANALOG)) {
++    return;
++  }
++
++  const uint32_t now = getMillis();
++  const uint32_t elapsed = now - mouseLastUpdate;
++  if (elapsed < 4) {
++    return; // update the stick at roughly 250 Hz
++  }
++  mouseLastUpdate = now;
++
++  const float sampleX = mouseAccX / elapsed;
++  const float sampleY = mouseAccY / elapsed;
++  mouseAccX = 0.0f;
++  mouseAccY = 0.0f;
++
++  // exponential smoothing: motion fades out smoothly instead of snapping to the centre
++  const float alpha = 0.35f;
++  mouseVelX += alpha * (sampleX - mouseVelX);
++  mouseVelY += alpha * (sampleY - mouseVelY);
++
++  // full deflection at (500 / sensitivity) counts per millisecond: 10 counts/ms at the default 50%,
++  // which is a fast flick for a 800-1600 DPI mouse
++  const float fullScale = 500.0f / std::max<uint32_t>(mouseSensitivity, 1);
++  const float magnitude = sqrtf(mouseVelX * mouseVelX + mouseVelY * mouseVelY);
++
++  float outX = 0.0f;
++  float outY = 0.0f;
++  if (magnitude > 0.03f) {
++    float normalized = std::min(1.0f, magnitude / fullScale);
++    float curved = powf(normalized, 0.7f); // more response for small movements
++    float dead = mouseDeadzone / 100.0f;
++    float shaped = dead + (1.0f - dead) * curved;
++    outX = (mouseVelX / magnitude) * shaped;
++    outY = (mouseVelY / magnitude) * shaped;
++  }
++
++  const int32_t span = GAMEPAD_JOYSTICK_MID;
++  uint16_t x = std::clamp<int32_t>(joystickMid + static_cast<int32_t>(outX * span), GAMEPAD_JOYSTICK_MIN_I32, GAMEPAD_JOYSTICK_MAX_I32);
++  uint16_t y = std::clamp<int32_t>(joystickMid + static_cast<int32_t>(outY * span), GAMEPAD_JOYSTICK_MIN_I32, GAMEPAD_JOYSTICK_MAX_I32);
++  if (mouseMovementMode == MOUSE_MOVEMENT_LEFT_ANALOG) {
++    _keyboard_host_state.lx = x;
++    _keyboard_host_state.ly = y;
++  } else {
++    _keyboard_host_state.rx = x;
++    _keyboard_host_state.ry = y;
++  }
++}
++
+ void KeyboardHostListener::process() {
+   Gamepad *gamepad = Storage::getInstance().GetGamepad();
++  updateMouseStick();
+   if (_keyboard_host_mounted == true || _mouse_host_mounted == true) {
+     gamepad->state.dpad     |= _keyboard_host_state.dpad;
+     gamepad->state.dpadOriginal |= _keyboard_host_state.dpad;
+@@ -90,6 +160,11 @@ void KeyboardHostListener::process() {
+     gamepad->state.ly       = _keyboard_host_state.ly;
+     gamepad->state.rx       = _keyboard_host_state.rx;
+     gamepad->state.ry       = _keyboard_host_state.ry;
++    if (_keyboard_host_leftStickActive) {
++        // keyboard left stick keys take priority over mouse movement mapped to the left stick
++        gamepad->state.lx   = _keyboard_host_leftStickX;
++        gamepad->state.ly   = _keyboard_host_leftStickY;
++    }
+     if (!gamepad->hasAnalogTriggers) {
+         gamepad->state.lt       |= _keyboard_host_state.lt;
+         gamepad->state.rt       |= _keyboard_host_state.rt;
+@@ -104,12 +179,6 @@ void KeyboardHostListener::process() {
+         gamepad->auxState.sensors.mouse.y = mouseY;
+         gamepad->auxState.sensors.mouse.z = mouseZ;
+         mouseActive = false;
+-    } else if(getMillis() - lastMouseReport > mouseResetMS) {
+-        // Since mouse position reports only happen when the mouse is moved, we need to reset the position manually
+-       _keyboard_host_state.lx = joystickMid;
+-       _keyboard_host_state.ly = joystickMid;
+-       _keyboard_host_state.rx = joystickMid;
+-       _keyboard_host_state.ry = joystickMid;
+     }
+   }
+ }
+@@ -142,6 +211,11 @@ void KeyboardHostListener::unmount(uint8_t dev_addr) {
+         Gamepad *gamepad = Storage::getInstance().GetGamepad();
+         gamepad->auxState.sensors.mouse.enabled = false;
+         mouseButtons = 0;
++        mouseAccX = mouseAccY = mouseVelX = mouseVelY = 0.0f;
++        _keyboard_host_state.lx = joystickMid;
++        _keyboard_host_state.ly = joystickMid;
++        _keyboard_host_state.rx = joystickMid;
++        _keyboard_host_state.ry = joystickMid;
+         _mouse_host_mounted = false;
+         _mouse_dev_addr = DEV_ADDR_NONE;
+         _mouse_instance = 0;
+@@ -179,12 +253,8 @@ uint8_t KeyboardHostListener::getKeycodeFromModifier(uint8_t modifier) {
+ void KeyboardHostListener::preprocess_report()
+ {
+   // --- preprocess only select analog movements --- // (by Pelsin)
+-  if (mouseMovementMode == MOUSE_MOVEMENT_LEFT_ANALOG) {
+-    _keyboard_host_state.lx = joystickMid;
+-    _keyboard_host_state.ly = joystickMid;
+-  } else if (mouseMovementMode == MOUSE_MOVEMENT_RIGHT_ANALOG) {
+-    _keyboard_host_state.rx = joystickMid;
+-    _keyboard_host_state.ry = joystickMid;
++  if (mouseMovementMode == MOUSE_MOVEMENT_LEFT_ANALOG || mouseMovementMode == MOUSE_MOVEMENT_RIGHT_ANALOG) {
++    // the stick used by the mouse is owned by updateMouseStick(), leave it alone
+   } else {
+     _keyboard_host_state.lx = joystickMid;
+     _keyboard_host_state.ly = joystickMid;
+@@ -202,6 +272,7 @@ void KeyboardHostListener::process_kbd_report(uint8_t dev_addr, hid_keyboard_rep
+   // move this preprocess dpad reset only to kbd_report (so as to not have it run on mouse input, by Fran89)
+   _keyboard_host_state.dpad = 0;
+   _keyboard_host_state.buttons = 0;
++  uint8_t leftStickDirections = 0;
+ 
+   // make this 14 instead of 7 to include modifier bitfields from hid_keyboard_modifier_bm_t
+   for(uint8_t i=0; i<14; i++)
+@@ -218,6 +289,13 @@ void KeyboardHostListener::process_kbd_report(uint8_t dev_addr, hid_keyboard_rep
+     }
+     if ( keycode )
+     {
++      leftStickDirections |=
++            ((keycode == _keyboard_host_mapLeftStickUp.key)    ? _keyboard_host_mapLeftStickUp.buttonMask    : 0)
++          | ((keycode == _keyboard_host_mapLeftStickDown.key)  ? _keyboard_host_mapLeftStickDown.buttonMask  : 0)
++          | ((keycode == _keyboard_host_mapLeftStickLeft.key)  ? _keyboard_host_mapLeftStickLeft.buttonMask  : 0)
++          | ((keycode == _keyboard_host_mapLeftStickRight.key) ? _keyboard_host_mapLeftStickRight.buttonMask : 0)
++        ;
++
+       _keyboard_host_state.dpad |=
+             ((keycode == _keyboard_host_mapDpadUp.key)    ? _keyboard_host_mapDpadUp.buttonMask : _keyboard_host_state.dpad)
+           | ((keycode == _keyboard_host_mapDpadDown.key)  ? _keyboard_host_mapDpadDown.buttonMask : _keyboard_host_state.dpad)
+@@ -245,6 +323,11 @@ void KeyboardHostListener::process_kbd_report(uint8_t dev_addr, hid_keyboard_rep
+         ;
+     }
+   }
++
++  // left stick keys: full deflection towards the pressed direction(s), centre when released
++  _keyboard_host_leftStickActive = (leftStickDirections != 0);
++  _keyboard_host_leftStickX = dpadToAnalogX(leftStickDirections);
++  _keyboard_host_leftStickY = dpadToAnalogY(leftStickDirections);
+ }
+ 
+ uint16_t KeyboardHostListener::scaleMouseToJoystick(int8_t mouseVal) {
+@@ -274,13 +357,7 @@ void KeyboardHostListener::process_mouse_report(uint8_t dev_addr, hid_mouse_repo
+   }
+ 
+   lastMouseReport = getMillis();
+-  //-------- report correct analog move --------// (by Pelsin)
+-  if (mouseMovementMode == MOUSE_MOVEMENT_LEFT_ANALOG) {
+-    _keyboard_host_state.lx = scaleMouseToJoystick(report->x);
+-    _keyboard_host_state.ly = scaleMouseToJoystick(report->y);
+-  } else if (mouseMovementMode == MOUSE_MOVEMENT_RIGHT_ANALOG) {
+-    _keyboard_host_state.rx = scaleMouseToJoystick(report->x);
+-    _keyboard_host_state.ry = scaleMouseToJoystick(report->y);
+-  }
+-
++  // movement is converted to a stick deflection in updateMouseStick() from the accumulated velocity
++  mouseAccX += report->x;
++  mouseAccY += report->y;
+ }
+diff --git a/src/config_utils.cpp b/src/config_utils.cpp
+index da60577b..d09059e0 100644
+--- a/src/config_utils.cpp
++++ b/src/config_utils.cpp
+@@ -1335,10 +1335,15 @@ void ConfigUtils::initUnsetPropertiesWithDefaults(Config& config)
+     INIT_UNSET_PROPERTY(config.addonOptions.keyboardHostOptions.mapping, keyButtonR3, KEY_BUTTON_R3);
+     INIT_UNSET_PROPERTY(config.addonOptions.keyboardHostOptions.mapping, keyButtonA1, KEY_BUTTON_A1);
+     INIT_UNSET_PROPERTY(config.addonOptions.keyboardHostOptions.mapping, keyButtonA2, KEY_BUTTON_A2);
++    INIT_UNSET_PROPERTY(config.addonOptions.keyboardHostOptions.mapping, keyLeftStickUp, KEY_LEFT_STICK_UP);
++    INIT_UNSET_PROPERTY(config.addonOptions.keyboardHostOptions.mapping, keyLeftStickDown, KEY_LEFT_STICK_DOWN);
++    INIT_UNSET_PROPERTY(config.addonOptions.keyboardHostOptions.mapping, keyLeftStickLeft, KEY_LEFT_STICK_LEFT);
++    INIT_UNSET_PROPERTY(config.addonOptions.keyboardHostOptions.mapping, keyLeftStickRight, KEY_LEFT_STICK_RIGHT);
+     INIT_UNSET_PROPERTY(config.addonOptions.keyboardHostOptions, mouseLeft, 0);
+     INIT_UNSET_PROPERTY(config.addonOptions.keyboardHostOptions, mouseMiddle, 0);
+     INIT_UNSET_PROPERTY(config.addonOptions.keyboardHostOptions, mouseRight, 0);
+     INIT_UNSET_PROPERTY(config.addonOptions.keyboardHostOptions, mouseSensitivity, KEYBOARD_HOST_MOUSE_SENSITIVITY);
++    INIT_UNSET_PROPERTY(config.addonOptions.keyboardHostOptions, mouseDeadzone, KEYBOARD_HOST_MOUSE_DEADZONE);
+ 
+     // addonOptions.focusModeOptions
+     INIT_UNSET_PROPERTY(config.addonOptions.focusModeOptions, enabled, !!FOCUS_MODE_ENABLED);
+diff --git a/src/webconfig.cpp b/src/webconfig.cpp
+index e37c3f3d..b202a2b1 100644
+--- a/src/webconfig.cpp
++++ b/src/webconfig.cpp
+@@ -2279,10 +2279,15 @@ std::string setAddonOptions()
+     docToValue(keyboardHostOptions.mapping.keyButtonA2, doc, "keyboardHostMap", "A2");
+     docToValue(keyboardHostOptions.mapping.keyButtonA3, doc, "keyboardHostMap", "A3");
+     docToValue(keyboardHostOptions.mapping.keyButtonA4, doc, "keyboardHostMap", "A4");
++    docToValue(keyboardHostOptions.mapping.keyLeftStickUp, doc, "keyboardHostMap", "LSUp");
++    docToValue(keyboardHostOptions.mapping.keyLeftStickDown, doc, "keyboardHostMap", "LSDown");
++    docToValue(keyboardHostOptions.mapping.keyLeftStickLeft, doc, "keyboardHostMap", "LSLeft");
++    docToValue(keyboardHostOptions.mapping.keyLeftStickRight, doc, "keyboardHostMap", "LSRight");
+     docToValue(keyboardHostOptions.mouseLeft, doc, "keyboardHostMouseLeft");
+     docToValue(keyboardHostOptions.mouseMiddle, doc, "keyboardHostMouseMiddle");
+     docToValue(keyboardHostOptions.mouseRight, doc, "keyboardHostMouseRight");
+     docToValue(keyboardHostOptions.mouseSensitivity, doc, "keyboardHostMouseSensitivity");
++    docToValue(keyboardHostOptions.mouseDeadzone, doc, "keyboardHostMouseDeadzone");
+     docToValue(keyboardHostOptions.movementMode, doc, "keyboardHostMouseMovement");
+ 
+     GamepadUSBHostOptions& gamepadUSBHostOptions = Storage::getInstance().getAddonOptions().gamepadUSBHostOptions;
+@@ -2780,10 +2785,15 @@ std::string getAddonOptions()
+     writeDoc(doc, "keyboardHostMap", "A2", keyboardHostOptions.mapping.keyButtonA2);
+     writeDoc(doc, "keyboardHostMap", "A3", keyboardHostOptions.mapping.keyButtonA3);
+     writeDoc(doc, "keyboardHostMap", "A4", keyboardHostOptions.mapping.keyButtonA4);
++    writeDoc(doc, "keyboardHostMap", "LSUp", keyboardHostOptions.mapping.keyLeftStickUp);
++    writeDoc(doc, "keyboardHostMap", "LSDown", keyboardHostOptions.mapping.keyLeftStickDown);
++    writeDoc(doc, "keyboardHostMap", "LSLeft", keyboardHostOptions.mapping.keyLeftStickLeft);
++    writeDoc(doc, "keyboardHostMap", "LSRight", keyboardHostOptions.mapping.keyLeftStickRight);
+     writeDoc(doc, "keyboardHostMouseLeft", keyboardHostOptions.mouseLeft);
+     writeDoc(doc, "keyboardHostMouseMiddle", keyboardHostOptions.mouseMiddle);
+     writeDoc(doc, "keyboardHostMouseRight", keyboardHostOptions.mouseRight);
+     writeDoc(doc, "keyboardHostMouseSensitivity", keyboardHostOptions.mouseSensitivity);
++    writeDoc(doc, "keyboardHostMouseDeadzone", keyboardHostOptions.mouseDeadzone);
+     writeDoc(doc, "keyboardHostMouseMovement", keyboardHostOptions.movementMode);
+ 
+     const GamepadUSBHostOptions& gamepadUSBHostOptions = Storage::getInstance().getAddonOptions().gamepadUSBHostOptions;
+diff --git a/www/src/Addons/Keyboard.tsx b/www/src/Addons/Keyboard.tsx
+index 9c8a6aec..7e60fa89 100644
+--- a/www/src/Addons/Keyboard.tsx
++++ b/www/src/Addons/Keyboard.tsx
+@@ -12,6 +12,7 @@ import { baseButtonMappings } from '../Services/WebApi';
+ import { AppContext } from '../Contexts/AppContext';
+ 
+ import { BUTTON_MASKS_OPTIONS } from '../Data/Buttons';
++import { KEY_CODES } from '../Data/Keyboard';
+ import { AddonPropTypes } from '../Pages/AddonsConfigPage';
+ 
+ export const keyboardScheme = {
+@@ -41,6 +42,7 @@ export const keyboardScheme = {
+ 			BUTTON_MASKS_OPTIONS,
+ 		),
+ 	keyboardHostMouseSensitivity: yup.number().required().min(1).max(100),
++	keyboardHostMouseDeadzone: yup.number().required().min(0).max(60),
+ 	keyboardHostMouseMovement: yup.string().required().oneOf(['0', '1', '2']),
+ };
+ 
+@@ -51,6 +53,7 @@ export const keyboardState = {
+ 	keyboardHostMouseRight: 0,
+ 	KeyboardHostAddonEnabled: 0,
+ 	keyboardHostMouseSensitivity: 0,
++	keyboardHostMouseDeadzone: 20,
+ 	keyboardHostMouseMovement: 0,
+ };
+ 
+@@ -81,7 +84,7 @@ const Keyboard = ({
+ 
+ 	const handleKeyChange = (values, setFieldValue) => (value, button) => {
+ 		const newMappings = { ...values.keyboardHostMap };
+-		newMappings[button].key = value;
++		newMappings[button] = { ...newMappings[button], key: value };
+ 		setFieldValue('keyboardHostMap', newMappings);
+ 	};
+ 
+@@ -124,6 +127,39 @@ const Keyboard = ({
+ 						/>
+ 					</div>
+ 				</Row>
++				<Row className="mb-3">
++					<p>{t('AddonsConfig:keyboard-host-left-stick-header-text')}</p>
++					{[
++						['LSUp', 'keyboard-host-left-stick-up'],
++						['LSDown', 'keyboard-host-left-stick-down'],
++						['LSLeft', 'keyboard-host-left-stick-left'],
++						['LSRight', 'keyboard-host-left-stick-right'],
++					].map(([button, labelKey]) => (
++						<div
++							className="col-sm-12 col-md-6 col-lg-3 mb-2"
++							key={`left-stick-${button}`}
++						>
++							<FormSelect
++								label={t(`AddonsConfig:${labelKey}`)}
++								className="form-select-sm"
++								id={`keyboardHostLeftStick${button}`}
++								value={values.keyboardHostMap[button]?.key ?? 0}
++								onChange={(e) =>
++									handleKeyChange(values, setFieldValue)(
++										e.target.value ? parseInt(e.target.value) : 0,
++										button,
++									)
++								}
++							>
++								{KEY_CODES.map((o, i) => (
++									<option key={`left-stick-${button}-${i}`} value={o.value}>
++										{o.label}
++									</option>
++								))}
++							</FormSelect>
++						</div>
++					))}
++				</Row>
+ 				<Row className="mb-3">
+ 					<p>{t('AddonsConfig:keyboard-host-mouse-header-text')}</p>
+ 					<div className="col-sm-12 col-md-6 col-lg-2 mb-2">
+@@ -189,6 +225,18 @@ const Keyboard = ({
+ 							onChange={handleChange}
+ 						/>
+ 					</div>
++					<div className="col-sm-12 mb-2">
++						<Form.Label>{`${t('AddonsConfig:keyboard-host-mouse-deadzone')}: ${values.keyboardHostMouseDeadzone}%`}</Form.Label>
++						<Form.Range
++							name="keyboardHostMouseDeadzone"
++							id={`keyboardHostMouseDeadzone`}
++							min={0}
++							max={60}
++							step={1}
++							value={values.keyboardHostMouseDeadzone}
++							onChange={handleChange}
++						/>
++					</div>
+ 					<div className="col-sm-12 mb-2">
+ 						<Form.Label>
+ 							{t('AddonsConfig:keyboard-host-mouse-movement')}
+diff --git a/www/src/Locales/en/AddonsConfig.jsx b/www/src/Locales/en/AddonsConfig.jsx
+index 356a6a01..dc38903a 100644
+--- a/www/src/Locales/en/AddonsConfig.jsx
++++ b/www/src/Locales/en/AddonsConfig.jsx
+@@ -142,10 +142,16 @@ export default {
+ 	'keyboard-host-header-text': 'Keyboard/Mouse Host Configuration',
+ 	'keyboard-host-sub-header-text': 'Keyboard Buttons',
+ 	'keyboard-host-mouse-header-text': 'Mouse Buttons',
++	'keyboard-host-left-stick-header-text': 'Left Analog Stick Keys',
++	'keyboard-host-left-stick-up': 'Left Stick Up',
++	'keyboard-host-left-stick-down': 'Left Stick Down',
++	'keyboard-host-left-stick-left': 'Left Stick Left',
++	'keyboard-host-left-stick-right': 'Left Stick Right',
+ 	'keyboard-host-left-mouse': 'Left',
+ 	'keyboard-host-middle-mouse': 'Middle',
+ 	'keyboard-host-right-mouse': 'Right',
+ 	'keyboard-host-mouse-sensitivity': 'Mouse Sensitivity',
++	'keyboard-host-mouse-deadzone': 'Mouse Dead Zone Offset (set to match the game dead zone)',
+ 	'keyboard-host-mouse-movement': 'Mouse Movement',
+ 	'keyboard-host-mouse-movement-none': 'None',
+ 	'keyboard-host-mouse-movement-left-analog': 'Left Analog',

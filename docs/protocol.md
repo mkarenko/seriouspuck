@@ -16,3 +16,12 @@ Each frame is COBS-encoded and terminated by `00`. The decoded bytes are:
 Input payload is 44 bytes: `buttons:u32`, four signed axes `i16`, two triggers `u16`, six touchpad values `i16`, gyro XYZ `i16`, acceleration XYZ `i16`, timestamp in microseconds `u32`. Buttons and all multibyte values are little endian. Axes and touchpad coordinates use signed range -32767..32767; triggers and pressure use 0..65535.
 
 Rumble payload is `left:u16, right:u16, duration_ms:u8`; status payload is a single status byte. Unknown versions, types, lengths, or invalid CRCs are discarded. Sequence wrap is allowed. The receiver should expire input after 30 ms and neutralize outputs.
+
+## OpenPuck source fields
+
+The nRF side fills the input frame from OpenPuck's `PuckInput` (`OpenPuck/triton.h` in the OpenPuck repository, one per bond slot, `g_in[slot]`): `buttons` (raw `TB_*` mask), `lx ly rx ry`, `lt rt` (0..255), `lpx lpy rpx rpy`, `ax ay az`, `gx gy gz`, `imuTimestampUs`. Notes for the encoder:
+
+- `lt`/`rt` are 8-bit in OpenPuck; scale to `u16` (`x * 257`) for the wire.
+- `PuckInput` has no touchpad pressure field; send `0` for `lpad_pressure`/`rpad_pressure`.
+- `TB_*` bits differ from `seriouspuck::Button` and must be translated. `TB_VIEW` is the Start-side button and `TB_MENU` the Select-side one (named backwards in OpenPuck), so `TB_VIEW` -> `Menu` and `TB_MENU` -> `View`.
+- Triggers set `TB_L2`/`TB_R2` at full pull (-> `LTClick`/`RTClick`).

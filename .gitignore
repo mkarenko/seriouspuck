@@ -1,0 +1,7 @@
+# build output and local artifacts
+build/
+dist/
+*.uf2
+__pycache__/
+*.pyc
+.vscode/

@@ -1,4 +1,6 @@
-# SeriousPuck
+# SeriousPuck - założenia projektu
+
+> Pierwotny opis projektu (po polsku). Sprzęt zmienił się na płytki Seeed XIAO (nRF52840 + RP2040), aktualne piny i połączenia są w [wiring.md](wiring.md), części w [parts.md](parts.md), stan prac w [README](../README.md).
 
 ## Cel projektu
 
@@ -21,13 +23,13 @@ Steam Controller / SC2
         │
         │ proprietary 2.4 GHz
         ▼
-   nRF52840 SuperMini
+   XIAO nRF52840
       OpenPuck
         │
         │ UART
         ▼
-    RP2040-Zero
-   GP2040-CE fork
+    XIAO RP2040
+   GP2040-CE (+ patch)
       │       │
       │       └── PIO USB Host ──► oryginalny pad Xbox
       │                               tylko AUTH
@@ -106,21 +108,20 @@ Dla auth zwykłym kontrolerem Xbox potrzebny jest fork / kod oparty o:
 Planowane połączenie UART:
 
 ```text
-nRF52840 SuperMini         RP2040-Zero
+XIAO nRF52840              XIAO RP2040
 ────────────────────────────────────────
-P0.06 / TX   ───────────►  GP5 / UART1 RX
-P0.08 / RX   ◄───────────  GP4 / UART1 TX
-GND          ────────────  GND
-RAW          ◄───────────  5V
+D7 / P1.12 (TX) ─────────►  D7 / GP1 (UART RX)
+D6 / P1.11 (RX) ◄─────────  D6 / GP0 (UART TX)
+GND             ──────────  GND
+5V              ◄─────────  5V
 ```
 
 Uwagi:
 
 - UART pracuje na poziomach 3.3 V.
 - Masa obu płytek musi być wspólna.
-- nRF jest zasilany z 5 V pochodzących z Xboxa przez RP2040.
-- `RAW` na nRF służy jako wejście zasilania.
-- Nie podawać 5 V bezpośrednio na `VCC/3V3`.
+- nRF jest zasilany z 5 V pochodzących z Xboxa przez RP2040 (wspólny pad 5V); USB-C na nRF zostaje niepodłączone.
+- Nie łączyć 3V3 z 3V3.
 
 Docelowy baudrate UART:
 
@@ -134,20 +135,20 @@ To wartość startowa; można później zmienić.
 
 # USB Host dla kontrolera Xbox AUTH
 
-RP2040-Zero:
+XIAO RP2040:
 
 ```text
-RP2040-Zero      USB-A female
+XIAO RP2040      USB-A female
 ─────────────────────────────
 5V          ───► VBUS
 GND         ───► GND
-GP0         ───► D+
-GP1         ───► D-
+D0 / GP26   ───► D+
+D1 / GP27   ───► D-
 ```
 
 USB Host realizowane przez PIO USB.
 
-GP0 / GP1 są wygodną parą sąsiednich GPIO.
+D+ i D- muszą leżeć na sąsiednich GPIO (tu GP26 / GP27). Na prototypie z Waveshare RP2040-Zero użyto GP0 / GP1.
 
 Natywny USB-C RP2040 jest używany jako:
 
@@ -164,11 +165,11 @@ Xbox Series X|S
       │
       │ USB 5V
       ▼
- RP2040-Zero
+ XIAO RP2040
       │
       ├── 5V ─────► USB-A VBUS ──► Xbox controller
       │
-      └── 5V ─────► RAW nRF52840
+      └── 5V ─────► 5V nRF52840
 ```
 
 Cały adapter może być zasilany wyłącznie z konsoli.
@@ -570,12 +571,7 @@ Późniejsza wersja może zawierać na jednej płytce:
 └────────────────────────────────────┘
 ```
 
-Pierwszy prototyp powinien zostać wykonany na:
-
-- nRF52840 SuperMini,
-- RP2040-Zero,
-- USB-A female,
-- przewodach.
+Prototyp: Waveshare RP2040-Zero + USB-A female na przewodach (działa: auth + klawiatura/mysz). Wersja docelowa: dwie płytki Seeed XIAO (nRF52840 + RP2040) ułożone jedna na drugiej, zob. [parts.md](parts.md).
 
 ---
 
@@ -589,23 +585,27 @@ seriouspuck
 
 Repozytorium: https://github.com/mkarenko/seriouspuck
 
-Możliwa struktura:
+Struktura repozytorium (aktualna):
 
 ```text
 seriouspuck/
 ├── README.md
 ├── docs/
-│   ├── architecture.md
+│   ├── architecture.md      (ten plik)
+│   ├── build-guide.md
+│   ├── parts.md
 │   ├── wiring.md
 │   ├── protocol.md
-│   └── xbox-auth.md
+│   └── images/
 ├── firmware/
-│   ├── nrf-openpuck/
-│   └── rp2040-gp2040ce/
-└── hardware/
-    ├── prototype/
-    └── pcb/
+│   ├── common/              protokół UART
+│   ├── nrf/                 integracja z OpenPuck (notatki)
+│   └── rp2040/              mapper SC -> Xbox
+├── patches/                 patch do GP2040-CE (klawiatura + mysz)
+└── tools/                   generator schematu
 ```
+
+OpenPuck i GP2040-CE są osobnymi repozytoriami (nie ma ich w tym repo), przypięte commity są w README.
 
 ---
 
